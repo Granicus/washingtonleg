@@ -4,8 +4,8 @@ require File.expand_path('../lib/washingtonleg/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Ryan Wold"]
   gem.email         = ["wold@afomi.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Wrapper for the WA Leg Services API}
+  gem.summary       = %q{http://github.com/granicus/washingtonleg}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)

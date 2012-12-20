@@ -1,4 +1,6 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in washingtonleg.gemspec
 gemspec
+
+require 'open-uri'
+require 'nokogiri'
