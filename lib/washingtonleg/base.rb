@@ -3,10 +3,6 @@ require 'nokogiri'
 
 module Washingtonleg
 
-  # Usage:
-  # load 'washingtonleg.rb'
-  # s = Washingtonleg::Base.new
-  # s.get_legislation_by_year(2012) => Nokogiri nodes for Legislation
   class Base
     attr_reader :root_url
 

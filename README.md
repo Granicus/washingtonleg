@@ -5,6 +5,9 @@ This ruby .gem is developed to interface with Washington Legislature's Web Servi
 
 WA Leg has an API, written in .NET, that delivers XML for the Data Objects described below.
 
+Our initial use case for this is to pull data from WA Leg service and push it into CivicIdeas for public commenting
+through eComment.
+
 ## Data Objects
 
 http://wslwebservices.leg.wa.gov/#_Executive_Summary
@@ -36,7 +39,34 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+from IRB:
+load '/path/to/lib/washingtonleg.rb'
+s = Washingtonleg::Base.new
+s.get_legislation_by_year(2012) => array of all bill items for 2012
+
+Each bill is a hash that looks something like:
+bill = {
+  :biennium => "2011-12",
+  :bill_id => "SI 502",
+  :bill_number => "502",
+  :subsitute_version => "0",
+  :engrossed_version => "0",
+  :short_legislation_type => "I",
+  :original_agency => "Senate",
+  :active => "true"
+}
+
+# Step 3 - Final
+## Load all 2011-12 Bills
+## from the local WA Leg files
+## into CivicIdeas
+## as AgendaItems
+##
+# TODO: rake maintenance:waleg_import
+
+## Data Notes
+
+# 4279 bills for the 2012-13 Session
 
 ## Contributing
 
