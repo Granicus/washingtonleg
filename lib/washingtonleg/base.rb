@@ -4,56 +4,50 @@ require 'nokogiri'
 module Washingtonleg
 
   class Base
-    attr_reader :root_url
+    attr_reader :root_url, :debug
 
 
-    def initialize
+    def initialize(debug = false)
       @root_url = BASE_API_URL
+      @debug = debug
       puts "Hello, from the WA Leg .gem"
     end
 
     # GetLegislationByYear
-    # gets all legislation in a year
     # LegislationService.asmx/GetLegislationByYear?year=2012
+    # gets all legislation in a year
     def get_legislation_by_year(year)
       response = nodes("#{@root_url}LegislationService.asmx/GetLegislationByYear?year=#{year.to_s}")
       parse_all_bills(response)
     end
 
-
-    # opens local Bill Summary file and downloads Bill Detail to file
-    def loop_and_get_all_bills(year)
-      # bills = get_legislation_by_year(year)
-      bills = JSON.parse(File.open("tmp/wa_leg_bills.json", "r").read)
-
-      bills[0..9].each do |bill|
-        puts "#{bill['bill_number']}, #{bill['biennium']}"
-        if bill['active'] == "true" # only process Active items
-          get_one(bill["bill_number"], bill["biennium"])
-        else
-          puts "ignored inactive bill"
-        end
-      end
+    # GetLegislation
+    # LegislationService.asmx/GetLegislation?biennium=2011-12&billNumber=1001
+    # gets one piece of Legislation in a Biennium
+    def get_legislation(bill_number = 0, biennium = "2011-12")
+      response = nodes("#{@root_url}LegislationService.asmx/GetLegislation?biennium=#{biennium}&billNumber=#{bill_number.to_s}")
+      parse_one_bill(response)
     end
 
-        # * helper method
-    def get_one(bill_number, biennium)
-      one_bill = @service.get_legislation(bill_number, biennium).css("ArrayOfLegislation Legislation").last
-      File.open("tmp/bill#{bill_number.to_s}.xml", "w") do |f|
-        f << one_bill.to_s
+    def loop_and_get_all_bills(year)
+      detailed_bills = []
+
+      bills = get_legislation_by_year(year)
+
+      bills.each do |bill|
+        if bill[:active] # only process Active items
+          detailed_bills << get_legislation(bill[:bill_number], bill[:biennium])
+          puts "#{bill[:bill_number]}, #{bill[:biennium]}"
+        else
+          puts "  ignore inactive Bill #{bill[:bill_number]}"
+        end
       end
-      one_bill
+
+      detailed_bills
     end
 
 
     private
-
-    # GetLegislation
-    # gets one piece of Legislation in a Biennium
-    # LegislationService.asmx/GetLegislation?biennium=2011-12&billNumber=1001
-    def get_legislation(bill_number = 0, biennium = "2011-12")
-      nodes("#{@root_url}/LegislationService.asmx/GetLegislation?biennium=#{biennium}&billNumber=#{bill_number.to_s}")
-    end
 
     def parse_all_bills(nodes)
       bills = []
@@ -77,6 +71,43 @@ module Washingtonleg
       end
 
       bills
+    end
+
+    def parse_one_bill(nodes)
+      bill = nodes.css("ArrayOfLegislation Legislation").last
+
+      json = {
+        biennium: bill.css("Biennium").first.text,
+        bill_id: bill.css("BillId").first.text,
+        bill_number: bill.css("BillNumber").first.text,
+        subsitute_version: bill.css("SubstituteVersion").first.text,
+        engrossed_version: bill.css("EngrossedVersion").first.text,
+        short_legislation_type: bill.css("ShortLegislationType ShortLegislationType").first.text,
+        long_legislation_type: bill.css("ShortLegislationType LongLegislationType").first.text,
+        original_agency: bill.css("OriginalAgency").first.text,
+        active: bill.css("Active").first.text,
+        state_fiscal_note: bill.css("StateFiscalNote").first.text,
+        local_fiscal_note: bill.css("LocalFiscalNote").first.text,
+        appropriations: bill.css("Appropriations").first.text,
+        requested_by_governor: bill.css("RequestedByGovernor").first.text,
+        requested_by_budget_committee: bill.css("RequestedByBudgetCommittee").first.text,
+        requested_by_department: bill.css("RequestedByDepartment").first.text,
+        short_description: bill.css("ShortDescription").first.text,
+        request: (bill.css("Request").first ? bill.css("Request").first.text : ""),
+        introduced_date: bill.css("IntroducedDate").first.text,
+        sponsor: bill.css("Sponsor").first.text,
+        # did not include CurrentStatus sub-nodes
+        prime_sponsor_id: bill.css("PrimeSponsorID").first.text,
+        long_description: bill.css("LongDescription").first.text,
+        legal_title: bill.css("LegalTitle").first.text,
+        companions: bill.css("Companions").first.text
+      }
+
+      File.open("tmp/bill#{json[:bill_number]}.xml", "w") do |f|
+        f << bill
+      end if @debug
+
+      json
     end
 
     def nodes(url)

@@ -42,6 +42,7 @@ Or install it yourself as:
 from IRB:
 load '/path/to/lib/washingtonleg.rb'
 s = Washingtonleg::Base.new
+    Washingtonleg::Base.new(:debug => true) # to write files out to /tmp
 s.get_legislation_by_year(2012) => array of all bill items for 2012
 
 Each bill is a hash that looks something like:
@@ -56,12 +57,11 @@ bill = {
   :active => "true"
 }
 
-# Step 3 - Final
-## Load all 2011-12 Bills
-## from the local WA Leg files
-## into CivicIdeas
-## as AgendaItems
-##
+### Step 3 - Final
+# Load all 2011-12 Bills
+# from the local WA Leg files
+# into CivicIdeas
+# as AgendaItems
 # TODO: rake maintenance:waleg_import
 
 ## Data Notes
