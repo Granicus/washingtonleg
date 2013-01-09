@@ -10,7 +10,6 @@ module Washingtonleg
     def initialize(debug = false)
       @root_url = BASE_API_URL
       @debug = debug
-      puts "Hello, from the WA Leg .gem"
     end
 
     # GetLegislationByYear
@@ -37,9 +36,9 @@ module Washingtonleg
       bills.each do |bill|
         if bill[:active] # only process Active items
           detailed_bills << get_legislation(bill[:bill_number], bill[:biennium])
-          puts "#{bill[:bill_number]}, #{bill[:biennium]}"
+          puts "#{bill[:bill_number]}, #{bill[:biennium]}" if @debug
         else
-          puts "  ignore inactive Bill #{bill[:bill_number]}"
+          puts "  ignore inactive Bill #{bill[:bill_number]}" if @debug
         end
       end
 
@@ -67,7 +66,7 @@ module Washingtonleg
         }
         bills << bill
 
-        puts "Bill #{bill[:bill_id]}"
+        puts "Bill #{bill[:bill_id]}" if @debug
       end
 
       bills
@@ -112,7 +111,7 @@ module Washingtonleg
 
     def nodes(url)
       response = open(url).read
-      puts "Getting #{url}"
+      puts "Getting #{url}" if @debug
       Nokogiri::XML(response)
     end
 
