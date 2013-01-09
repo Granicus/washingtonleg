@@ -31,21 +31,23 @@ Add this line to your application's Gemfile:
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
 Or install it yourself as:
 
     $ gem install washingtonleg
 
-## Usage
+## Usages
 
 from IRB:
-load '/path/to/lib/washingtonleg.rb'
+  load '/path/to/lib/washingtonleg.rb'
 s = Washingtonleg::Base.new
     Washingtonleg::Base.new(:debug => true) # to write files out to /tmp
 s.get_legislation_by_year(2012) => array of all bill items for 2012
 
 Each bill is a hash that looks something like:
+
+```
 bill = {
   :biennium => "2011-12",
   :bill_id => "SI 502",
@@ -56,17 +58,17 @@ bill = {
   :original_agency => "Senate",
   :active => "true"
 }
+```
 
 ### Step 3 - Final
-# Load all 2011-12 Bills
-# from the local WA Leg files
-# into CivicIdeas
-# as AgendaItems
-# TODO: rake maintenance:waleg_import
+1. Load all 2011-12 Bills
+1. from the local WA Leg files
+1. into CivicIdeas
+1. as AgendaItems
+1. TODO: rake maintenance:waleg_import
 
 ## Data Notes
-
-# 4279 bills for the 2012-13 Session
+* 4279 bills for the 2012-13 Session
 
 ## Contributing
 
