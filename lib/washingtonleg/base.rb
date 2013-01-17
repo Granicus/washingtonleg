@@ -1,5 +1,6 @@
 require 'open-uri'
 require 'nokogiri'
+require 'active_support/inflector'
 
 module Washingtonleg
 
@@ -73,34 +74,40 @@ module Washingtonleg
     end
 
     def parse_one_bill(nodes)
-      bill = nodes.css("ArrayOfLegislation Legislation").last
+      bill = nodes.at_css("ArrayOfLegislation Legislation")
 
-      json = {
-        biennium: bill.css("Biennium").first.text,
-        bill_id: bill.css("BillId").first.text,
-        bill_number: bill.css("BillNumber").first.text,
-        subsitute_version: bill.css("SubstituteVersion").first.text,
-        engrossed_version: bill.css("EngrossedVersion").first.text,
-        short_legislation_type: bill.css("ShortLegislationType ShortLegislationType").first.text,
-        long_legislation_type: bill.css("ShortLegislationType LongLegislationType").first.text,
-        original_agency: bill.css("OriginalAgency").first.text,
-        active: bill.css("Active").first.text,
-        state_fiscal_note: bill.css("StateFiscalNote").first.text,
-        local_fiscal_note: bill.css("LocalFiscalNote").first.text,
-        appropriations: bill.css("Appropriations").first.text,
-        requested_by_governor: bill.css("RequestedByGovernor").first.text,
-        requested_by_budget_committee: bill.css("RequestedByBudgetCommittee").first.text,
-        requested_by_department: bill.css("RequestedByDepartment").first.text,
-        short_description: bill.css("ShortDescription").first.text,
-        request: (bill.css("Request").first ? bill.css("Request").first.text : ""),
-        introduced_date: bill.css("IntroducedDate").first.text,
-        sponsor: bill.css("Sponsor").first.text,
-        # did not include CurrentStatus sub-nodes
-        prime_sponsor_id: bill.css("PrimeSponsorID").first.text,
-        long_description: bill.css("LongDescription").first.text,
-        legal_title: bill.css("LegalTitle").first.text,
-        companions: bill.css("Companions").first.text
-      }
+      fields = [
+        "Biennium",
+        "BillId",
+        "BillNumber",
+        "SubstituteVersion",
+        "EngrossedVersion",
+        "ShortLegislationType ShortLegislationType",
+        "ShortLegislationType LongLegislationType",
+        "OriginalAgency",
+        "Active",
+        "StateFiscalNote",
+        "LocalFiscalNote",
+        "Appropriations",
+        "RequestedByGovernor",
+        "RequestedByBudgetCommittee",
+        "RequestedByDepartment",
+        "ShortDescription",
+        "Request",
+        "IntroducedDate",
+        "Sponsor",
+        "PrimeSponsorID",
+        "LongDescription",
+        "LegalTitle",
+        "Companions",
+      ]
+
+      json = {}
+      fields.each do |f|
+        k = f.split[-1].underscore
+        v = bill.at_css(f)
+        json[k] = v ? v.text : nil
+      end
 
       File.open("tmp/bill#{json[:bill_number]}.xml", "w") do |f|
         f << bill
