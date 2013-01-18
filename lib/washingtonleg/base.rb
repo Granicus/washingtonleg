@@ -106,7 +106,7 @@ module Washingtonleg
       fields.each do |f|
         k = f.split[-1].underscore
         v = bill.at_css(f)
-        json[k] = v ? v.text : nil
+        json[k.to_sym] = v ? v.text : nil
       end
 
       File.open("tmp/bill#{json[:bill_number]}.xml", "w") do |f|
