@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+rvm_auto_reload_flag=2
+environment_id="ruby-1.9.3-p194@washingtonleg"
+
+rvm_path="${rvm_path:-$HOME/.rvm}"
+environment_path="${rvm_path}/environments/${environment_id}"
+after_use_hook_path="${rvm_path}/hooks/after_use"
+
+if [[ -s "${environment_path}" ]]; then
+  . "${environment_path}"
+  if [[ -s "${after_use_hook_path}" ]]; then
+    . "${after_use_hook_path}"
+  fi
+else
+  if ! rvm --create  "${environment_id}"; then
+    echo "Failed to create RVM environment '${environment_id}'."
+    exit 1
+  fi
+fi
+
+if command -v bundle && [[ -s Gemfile ]]; then
+  bundle install
+fi
