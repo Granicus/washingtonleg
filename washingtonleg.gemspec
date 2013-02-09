@@ -18,4 +18,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency('bundler', '>= 1.0.0')
   gem.add_dependency('activesupport', '>= 3.2.0')
   gem.add_dependency('nokogiri', '>= 1.5.4')
+  gem.add_development_dependency('pry', '>= 0.9.10')
 end
