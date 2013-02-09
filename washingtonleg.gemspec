@@ -14,4 +14,8 @@ Gem::Specification.new do |gem|
   gem.name          = "washingtonleg"
   gem.require_paths = ["lib"]
   gem.version       = Washingtonleg::VERSION
+
+  gem.add_dependency('bundler', '>= 1.0.0')
+  gem.add_dependency('activesupport', '>= 3.2.0')
+  gem.add_dependency('nokogiri', '>= 1.5.4')
 end
