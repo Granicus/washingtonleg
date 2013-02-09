@@ -5,11 +5,11 @@ require 'active_support/inflector'
 module Washingtonleg
 
   class Base
-    attr_reader :root_url, :debug
-
+    attr_reader :url, :debug
 
     def initialize(debug = false)
-      @root_url = BASE_API_URL
+      @url = BASE_API_URL
+      @url_prefix = 'LegislationService.asmx'
       @debug = debug
     end
 
@@ -17,18 +17,19 @@ module Washingtonleg
     # LegislationService.asmx/GetLegislationByYear?year=2012
     # gets all legislation in a year
     def get_legislation_by_year(year)
-      response = nodes("#{@root_url}LegislationService.asmx/GetLegislationByYear?year=#{year.to_s}")
-      parse_all_bills(response)
+      response = nodes("GetLegislationByYear?year=#{year.to_s}")
+      parse_bills(response)
     end
 
     # GetLegislation
     # LegislationService.asmx/GetLegislation?biennium=2011-12&billNumber=1001
     # gets one piece of Legislation in a Biennium
-    def get_legislation(bill_number = 0, biennium = "2011-12")
-      response = nodes("#{@root_url}LegislationService.asmx/GetLegislation?biennium=#{biennium}&billNumber=#{bill_number.to_s}")
-      parse_one_bill(response)
+    def get_legislation(bill_number = 0, biennium = '2011-12')
+      response = nodes("GetLegislation?biennium=#{biennium}&billNumber=#{bill_number.to_s}")
+      parse_bill(response)
     end
 
+    # Call GetLegislation for each bill returned by GetLegislationByYear.
     def loop_and_get_all_bills(year)
       detailed_bills = []
 
@@ -46,13 +47,26 @@ module Washingtonleg
       detailed_bills
     end
 
+    # Get BillId for all bills returned by GetLegislationByYear for a specified year.
+    def get_billids(year)
+      response = nodes("GetLegislationByYear?year=#{year.to_s}")
+      response.css("ArrayOfLegislationInfo > LegislationInfo > BillId").collect { |b| b.text }.sort.uniq.compact
+    end
+
+    # GetRecentLegislation
+    # GranicusService.asmx/GetRecentLegislation
+    # Gets BillId and LongDescription for bills published in the last 48 hours.
+    def get_recent_legislation
+      response = nodes('GetRecentLegislation', 'GranicusService.asmx')
+      response.css('ArrayOfGranicusLegislation > GranicusLegislation').collect { |b| { :bill_id => b.at_css('BillId').text, :long_description => b.at_css('LongDescription').text } }
+    end
 
     private
 
-    def parse_all_bills(nodes)
+    def parse_bills(nodes)
       bills = []
 
-      all_legislative_bills = nodes.css("ArrayOfLegislationInfo LegislationInfo") # 4279 records
+      all_legislative_bills = nodes.css("ArrayOfLegislationInfo LegislationInfo")
 
       all_legislative_bills.each_with_index do |bill, i|
         bill = {
@@ -73,7 +87,7 @@ module Washingtonleg
       bills
     end
 
-    def parse_one_bill(nodes)
+    def parse_bill(nodes)
       bill = nodes.at_css("ArrayOfLegislation Legislation")
 
       fields = [
@@ -116,11 +130,11 @@ module Washingtonleg
       json
     end
 
-    def nodes(url)
-      response = open(url).read
-      puts "Getting #{url}" if @debug
+    def nodes(url, url_prefix = @url_prefix)
+      url_prefix = "#{url_prefix.chomp('/')}/" if url_prefix && !url_prefix.empty?
+      puts "Getting #{@url.chomp('/')}/#{url_prefix}#{url}" if @debug
+      response = open("#{@url.chomp('/')}/#{url_prefix}#{url}").read
       Nokogiri::XML(response)
     end
-
   end
 end
