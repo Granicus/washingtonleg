@@ -1,3 +1,3 @@
-source 'https://rubygems.org'
+source 'http://mirror.rightscale.com/rubygems/archive/latest/'
 
 gemspec
